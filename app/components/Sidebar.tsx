@@ -2,6 +2,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import ActivityFeed from "./ActivityFeed";
 
 const Sidebar: React.FC = () => {
   return (
@@ -22,6 +23,12 @@ const Sidebar: React.FC = () => {
           <span className="sidebar-text ml-2 hidden group-hover:inline">Watch Later</span>
         </Link>
       </nav>
+
+      <div className="activity-container mt-6 hidden group-hover:block">
+        <h3 className="text-lg font-semibold">Latest Activities</h3>
+        <ActivityFeed />
+      </div>
+
     </aside>
   );
 };

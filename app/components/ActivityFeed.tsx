@@ -14,6 +14,7 @@ const ActivityFeed: React.FC = () => {
     async function loadActivities() {
       const response = await fetch("/api/activities?page=1");
       const data = await response.json();
+      console.log("Fetched Activities:", data); // Log the fetched data
       setActivities(data.activities);
     }
     loadActivities();
