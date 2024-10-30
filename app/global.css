@@ -1,3 +1,44 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Example global styles in globals.css */
+
+.app-layout {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .main-content {
+    display: flex;
+    flex: 1;
+  }
+  
+  .sidebar {
+    width: 60px;
+    transition: width 0.3s;
+  }
+  
+  .sidebar.expanded {
+    width: 250px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+  }
+  
+  .activity-feed {
+    font-size: 0.875rem;
+    color: #333;
+  }
+  
+  .logout-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
