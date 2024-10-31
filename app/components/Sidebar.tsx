@@ -7,7 +7,7 @@ import ActivityFeed from "./ActivityFeed";
 const Sidebar: React.FC = () => {
   return (
     <aside
-      className="sidebar h-full bg-teal-300 p-4 transition-all duration-300 ease-in-out group hover:w-64 w-16"
+      className="sidebar min-h-screen h-full bg-teal-300 p-4 transition-all duration-300 ease-in-out group hover:w-64 w-16"
     >
       <nav>
         <Link href="/" className="flex items-center p-2">

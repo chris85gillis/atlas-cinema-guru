@@ -1,0 +1,17 @@
+/* app/components/HomePage/index.css */
+
+.home-container {
+    display: flex;
+    width: 100%;
+  }
+  
+  .filters-container {
+    width: 25%;
+  }
+  
+  .movies-container {
+    width: 75%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
