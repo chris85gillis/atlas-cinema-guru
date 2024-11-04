@@ -1,26 +1,35 @@
 // app/components/PaginationControls.tsx
+
 import React from 'react';
 
-interface PaginationProps {
+interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
-  onPageChange: (newPage: number) => void;
+  onPageChange: (page: number) => void;
 }
 
-const PaginationControls: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+const PaginationControls: React.FC<PaginationControlsProps> = ({ currentPage, totalPages, onPageChange }) => {
+  const handlePrevious = () => {
+    if (currentPage > 1) onPageChange(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) onPageChange(currentPage + 1);
+  };
+
   return (
-    <div className="pagination-controls flex justify-center gap-4 mt-4">
+    <div className="flex justify-center space-x-4 mt-8">
       <button
+        onClick={handlePrevious}
+        className="pagination-button flex items-center justify-center w-32 px-6 py-2 bg-teal-400 text-white font-semibold rounded-full hover:bg-teal-500 transition"
         disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
-        className="px-4 py-2 rounded-full bg-teal-400 text-white disabled:opacity-50"
       >
         Previous
       </button>
       <button
+        onClick={handleNext}
+        className="pagination-button flex items-center justify-center w-32 px-6 py-2 bg-teal-400 text-white font-semibold rounded-full hover:bg-teal-500 transition"
         disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-        className="px-4 py-2 rounded-full bg-teal-400 text-white disabled:opacity-50"
       >
         Next
       </button>
