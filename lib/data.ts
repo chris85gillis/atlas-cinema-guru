@@ -248,10 +248,15 @@ export async function fetchActivities(page: number, userEmail: string) {
       .offset((page - 1) * 10)
       .execute();
 
-    return activities;
+    // Format each activity with a description
+    return activities.map(activity => ({
+      id: activity.id,
+      timestamp: activity.timestamp,
+      description: `${activity.activity === "FAVORITED" ? "Favorited" : "Added"} ${activity.title}${activity.activity === "WATCH_LATER" ? " to Watch Later" : ""}`
+    }));
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch favorites.");
+    throw new Error("Failed to fetch activities.");
   }
 }
 

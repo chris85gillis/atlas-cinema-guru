@@ -8,14 +8,14 @@ import PaginationControls from './components/PaginationControls';
 
 const HomePage: React.FC = () => {
   const [movies, setMovies] = useState<any[]>([]);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]); // Store favorite IDs here
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [watchLaterIds, setWatchLaterIds] = useState<string[]>([]); // New state for Watch Later IDs
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [minYear, setMinYear] = useState('');
   const [maxYear, setMaxYear] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
-  // Fetch favorite IDs when the component mounts
   const fetchFavoriteIds = async () => {
     try {
       const response = await fetch('/api/favorites', {
@@ -24,9 +24,23 @@ const HomePage: React.FC = () => {
       });
       if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
       const data = await response.json();
-      setFavoriteIds(data.favorites.map((fav: any) => fav.id)); // Extract favorite IDs
+      setFavoriteIds(data.favorites.map((fav: any) => fav.id));
     } catch (error) {
       console.error('Failed to fetch favorite IDs:', error);
+    }
+  };
+
+  const fetchWatchLaterIds = async () => {
+    try {
+      const response = await fetch('/api/watch-later', {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const data = await response.json();
+      setWatchLaterIds(data.watchLater.map((movie: any) => movie.id));
+    } catch (error) {
+      console.error('Failed to fetch watch later IDs:', error);
     }
   };
 
@@ -47,26 +61,26 @@ const HomePage: React.FC = () => {
       if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
 
       const data = await response.json();
-
-      // Mark movies as favorite if their ID exists in favoriteIds
-      const moviesWithFavorites = data.title.map((movie: any) => ({
+      const moviesWithState = data.title.map((movie: any) => ({
         ...movie,
         isFavorite: favoriteIds.includes(movie.id),
+        inWatchLater: watchLaterIds.includes(movie.id),
       }));
 
-      setMovies(moviesWithFavorites);
+      setMovies(moviesWithState);
     } catch (error) {
       console.error("Failed to fetch movies:", error);
     }
   };
 
   useEffect(() => {
-    fetchFavoriteIds(); // Fetch favorite IDs when component mounts
+    fetchFavoriteIds();
+    fetchWatchLaterIds();
   }, []);
 
   useEffect(() => {
-    fetchMovies(); // Fetch movies when filters or pagination change
-  }, [currentPage, searchTerm, minYear, maxYear, selectedGenres, favoriteIds]);
+    fetchMovies();
+  }, [currentPage, searchTerm, minYear, maxYear, selectedGenres, favoriteIds, watchLaterIds]);
 
   const handleToggleFavorite = async (id: string, isCurrentlyFavorite: boolean) => {
     try {
@@ -78,7 +92,6 @@ const HomePage: React.FC = () => {
       });
 
       if (response.ok) {
-        // Update local favoriteIds state
         setFavoriteIds((prevIds) =>
           isCurrentlyFavorite ? prevIds.filter((favId) => favId !== id) : [...prevIds, id]
         );
@@ -87,6 +100,28 @@ const HomePage: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to update favorite:", error);
+    }
+  };
+
+  const handleToggleWatchLater = async (id: string) => {
+    const isCurrentlyInWatchLater = watchLaterIds.includes(id);
+    try {
+      const method = isCurrentlyInWatchLater ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/watch-later/${id}`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        setWatchLaterIds((prevIds) =>
+          isCurrentlyInWatchLater ? prevIds.filter((watchId) => watchId !== id) : [...prevIds, id]
+        );
+      } else {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Failed to update watch later:", error);
     }
   };
 
@@ -102,23 +137,21 @@ const HomePage: React.FC = () => {
       />
 
       <section className="movie-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {movies.map((movie) => {
-          const imageUrl = `/images/${movie.id}.webp`;
-          return (
-            <MovieCard
-              key={movie.id}
-              id={movie.id}
-              title={movie.title}
-              released={movie.released}
-              description={movie.synopsis}
-              genre={movie.genre}
-              isFavorite={movie.isFavorite}
-              inWatchLater={movie.inWatchLater}
-              imageUrl={imageUrl}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          );
-        })}
+        {movies.map((movie) => (
+          <MovieCard
+            key={movie.id}
+            id={movie.id}
+            title={movie.title}
+            released={movie.released}
+            description={movie.synopsis}
+            genre={movie.genre}
+            isFavorite={movie.isFavorite}
+            inWatchLater={movie.inWatchLater}
+            imageUrl={`/images/${movie.id}.webp`}
+            onToggleFavorite={() => handleToggleFavorite(movie.id, movie.isFavorite)}
+            onToggleWatchLater={() => handleToggleWatchLater(movie.id)}
+          />
+        ))}
       </section>
 
       <PaginationControls

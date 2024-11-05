@@ -25,7 +25,6 @@ const Sidebar: React.FC = () => {
       </nav>
 
       <div className="activity-container mt-6 hidden group-hover:block">
-        <h3 className="text-lg font-semibold">Latest Activities</h3>
         <ActivityFeed />
       </div>
 

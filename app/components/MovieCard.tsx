@@ -41,6 +41,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
+      {/* Display the image */}
       <img
         src={imageUrl}
         alt={title}
@@ -48,6 +49,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         onError={handleImageError}
       />
 
+      {/* Overlay with movie details */}
       {hovered && (
         <div className="info-overlay absolute inset-0 bg-blue-900 bg-opacity-80 text-white p-4 flex flex-col justify-end">
           <h3 className="text-lg font-semibold">{title} ({released})</h3>
@@ -56,7 +58,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
         </div>
       )}
 
-      <div className="absolute top-2 right-2 flex space-x-2">
+      {/* Icons for Favorite and Watch Later, visible only on hover */}
+      <div
+        className={`absolute top-2 right-2 flex space-x-2 opacity-0 transition-opacity duration-300 ${
+          hovered ? "opacity-100" : ""
+        }`}
+      >
         <button
           onClick={() => onToggleFavorite(id, isFavorite)}
           className="text-white"

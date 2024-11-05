@@ -1,3 +1,4 @@
+// /api/watch-later/[id].ts
 import {
   deleteWatchLater,
   insertWatchLater,
@@ -6,21 +7,17 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-export const GET = auth(
-  //@ts-ignore
+export const POST = auth(
   async (req: NextRequest, { params }: { params: { id: string } }) => {
     const { id } = params;
-
-    //@ts-ignore
     if (!req.auth) {
       return NextResponse.json(
         { error: "Unauthorized - Not logged in" },
         { status: 401 }
       );
     }
-
     const {
-      user: { email }, //@ts-ignore
+      user: { email },
     } = req.auth;
 
     const exists = await watchLaterExists(id, email);
@@ -34,12 +31,10 @@ export const GET = auth(
 );
 
 export const DELETE = auth(
-  //@ts-ignore
   async (req: NextRequest, { params }: { params: { id: string } }) => {
     const { id } = params;
-
     const {
-      user: { email }, //@ts-ignore
+      user: { email },
     } = req.auth;
 
     await deleteWatchLater(id, email);
