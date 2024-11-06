@@ -22,7 +22,7 @@ const HomePage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+
       const data = await response.json();
       setFavoriteIds(data.favorites.map((fav: any) => fav.id));
     } catch (error) {

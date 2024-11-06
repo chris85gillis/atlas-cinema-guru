@@ -1,4 +1,3 @@
-import exp from "constants";
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 
@@ -10,19 +9,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   providers: [
     GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    }),
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      authorization: {
+          params: {
+              prompt: "consent",
+              access_type: "offline",
+              response_type: "code",
+          },
+      },
+  })
   ],
   callbacks: {
-    // Session callback to pass email to session
-    async session({ session, token }) {
-      session.user.email = token.email;
-      return session;
-    },
-    // Redirect to login if unauthorized
     authorized: async ({ auth }) => {
-      return !!auth; // true if authenticated, false otherwise
+      // Logged in users are authenticated, otherwise redirect to login page
+      return !!auth;
     },
   },
 });
