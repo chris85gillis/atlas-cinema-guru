@@ -16,12 +16,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="min-h-screen flex flex-col">
         <SessionProvider>
           <Header />
-          <div className="layout flex">
-            <Sidebar />
-            <main className="content flex-grow">{children}</main>
+          <div className="layout flex h-screen">
+            {/* Sidebar Container */}
+            <div className="sidebar-container h-full">
+              <Sidebar />
+            </div>
+            {/* Main Content Container */}
+            <div className="content-container flex-grow h-full overflow-y-auto">
+              <main className="content">{children}</main>
+            </div>
           </div>
         </SessionProvider>
       </body>

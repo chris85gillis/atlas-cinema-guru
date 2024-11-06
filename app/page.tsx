@@ -156,7 +156,7 @@ const HomePage: React.FC = () => {
 
       <PaginationControls
         currentPage={currentPage}
-        totalPages={10}
+        totalPages={13}
         onPageChange={setCurrentPage}
       />
     </div>

@@ -17,6 +17,7 @@
     background-color: #319795; /* Dark teal */
     color: white;
     transition: width 0.3s;
+    height: 100%;
   }
   
   .sidebar.expanded {
