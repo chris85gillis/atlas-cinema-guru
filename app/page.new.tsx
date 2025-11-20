@@ -53,8 +53,7 @@ const HomePage: React.FC = () => {
       if (selectedGenres.length > 0) queryParams.append('genres', selectedGenres.join(','));
       queryParams.append('page', currentPage.toString());
 
-      const paramsString = queryParams.toString();
-      const response = await fetch(`/api/titles?${paramsString}`, {
+      const response = await fetch(`/api/titles?${queryParams.toString()}`, {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
@@ -62,13 +61,6 @@ const HomePage: React.FC = () => {
       if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
 
       const data = await response.json();
-
-      // If no results and we're on a later page, fallback to page 1 and let the effect re-fetch.
-      if ((data.title?.length ?? 0) === 0 && currentPage > 1) {
-        setCurrentPage(1);
-        return;
-      }
-
       const moviesWithState = data.title.map((movie: any) => ({
         ...movie,
         isFavorite: favoriteIds.includes(movie.id),

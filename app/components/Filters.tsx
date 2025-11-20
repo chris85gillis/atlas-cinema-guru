@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useDebouncedValue } from './useDebouncedValue';
 
 interface FiltersProps {
   onSearch: (searchTerm: string) => void;
@@ -15,6 +16,9 @@ const Filters: React.FC<FiltersProps> = ({ onSearch, onFilterByYear, onFilterByG
   const [maxYear, setMaxYear] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [genres, setGenres] = useState<string[]>([]);
+
+  // Debounce the search term
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
 
   useEffect(() => {
     // Fetch genres from the API
@@ -32,9 +36,13 @@ const Filters: React.FC<FiltersProps> = ({ onSearch, onFilterByYear, onFilterByG
     fetchGenres();
   }, []);
 
+  useEffect(() => {
+    const value = debouncedSearchTerm.trim();
+    onSearch(value);
+  }, [debouncedSearchTerm, onSearch]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    onSearch(e.target.value);
   };
 
   const handleMinYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {

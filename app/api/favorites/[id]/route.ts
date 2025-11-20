@@ -1,34 +1,50 @@
-import { deleteFavorite, favoriteExists, insertFavorite } from "@/lib/data";
+import { deleteFavorite, favoriteExists, insertActivity, insertFavorite } from "@/lib/data";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+
+/**
+ * Helper function to validate authentication
+ */
+const getAuthenticatedUser = (req: NextRequest) => {
+  //@ts-ignore
+  if (!req.auth) {
+    throw new Error("Unauthorized - Not logged in");
+  }
+  //@ts-ignore
+  return req.auth.user.email;
+};
 
 /**
  * POST /api/favorites/:id
  */
 export const POST = auth(
-  //@ts-ignore
-  async (req: NextRequest, { params }: { params: { id: string } }) => {
-    const { id } = params;
+  async (req: NextRequest, context: { params?: Record<string, string | string[]> }) => {
+    try {
+      const { params } = context;
+      if (!params || typeof params.id !== "string") {
+        return NextResponse.json(
+          { error: "Invalid request parameters" },
+          { status: 400 }
+        );
+      }
 
-    //@ts-ignore
-    if (!req.auth) {
+      const email = getAuthenticatedUser(req);
+
+      const exists = await favoriteExists(params.id, email);
+      if (exists) {
+        return NextResponse.json({ message: "Already favorited" });
+      }
+
+      await insertFavorite(params.id, email);
+
+      return NextResponse.json({ message: "Favorite Added" });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred";
       return NextResponse.json(
-        { error: "Unauthorized - Not logged in" },
-        { status: 401 }
+        { error: errorMessage },
+        { status: 500 }
       );
     }
-
-    const {
-      user: { email }, //@ts-ignore
-    } = req.auth;
-
-    const exists = await favoriteExists(id, email);
-    if (exists) {
-      return NextResponse.json({ message: "Already favorited" });
-    }
-
-    await insertFavorite(id, email);
-    return NextResponse.json({ message: "Favorite Added" });
   }
 );
 
@@ -36,15 +52,27 @@ export const POST = auth(
  * DELETE /api/favorites/:id
  */
 export const DELETE = auth(
-  //@ts-ignore
-  async (req: NextRequest, { params }: { params: { id: string } }) => {
-    const { id } = params;
+  async (req: NextRequest, context: { params?: Record<string, string | string[]> }) => {
+    try {
+      const { params } = context;
+      if (!params || typeof params.id !== "string") {
+        return NextResponse.json(
+          { error: "Invalid request parameters" },
+          { status: 400 }
+        );
+      }
 
-    const {
-      user: { email }, //@ts-ignore
-    } = req.auth;
+      const email = getAuthenticatedUser(req);
 
-    await deleteFavorite(id, email);
-    return NextResponse.json({ message: "Favorite removed" });
+      await deleteFavorite(params.id, email);
+
+      return NextResponse.json({ message: "Favorite removed" });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred";
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 500 }
+      );
+    }
   }
 );

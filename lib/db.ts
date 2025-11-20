@@ -12,7 +12,7 @@ export interface Database {
 export interface TitlesTable {
   id: Generated<string>;
   title: string;
-  synposis: string;
+  synopsis: string;
   released: number;
   genre: string;
 }

@@ -1,5 +1,6 @@
 // components/ActivityFeed.tsx
-import React, { useEffect, useState } from "react";
+import React from "react";
+import useSWR from "swr";
 
 interface Activity {
   id: string;
@@ -7,33 +8,23 @@ interface Activity {
   timestamp: string;
 }
 
+const fetcher = (url: string) =>
+  fetch(url, {
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  }).then((res) => res.json());
+
 const ActivityFeed: React.FC = () => {
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error } = useSWR("/api/activities?page=1", fetcher, {
+    refreshInterval: 5000, // Optional: Poll every 5 seconds for updates
+  });
 
-  useEffect(() => {
-    const loadActivities = async () => {
-      try {
-        const response = await fetch("/api/activities?page=1", {
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        const data = await response.json();
-        setActivities(data.activities);
-      } catch (err) {
-        console.error("Failed to load activities:", err);
-        setError("Failed to load activities. Please try again later.");
-      }
-    };
-
-    loadActivities();
-  }, []);
+  const activities: Activity[] = data?.activities || [];
 
   return (
     <div className="activity-feed bg-teal-100 p-4 rounded-lg shadow-md">
       <h3 className="text-lg font-semibold text-blue-900 mb-4">Latest Activities</h3>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500">Failed to load activities. Please try again later.</p>}
       {activities.length > 0 ? (
         <ul className="space-y-3">
           {activities.map((activity) => (

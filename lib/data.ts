@@ -32,18 +32,22 @@ export async function fetchTitles(
         .execute()
     ).map((row) => row.title_id);
 
-    //Fetch titles
-    const titles = await db
+    // Fetch titles
+    let titlesQuery = db
       .selectFrom("titles")
       .selectAll("titles")
       .where("titles.released", ">=", minYear)
       .where("titles.released", "<=", maxYear)
-      .where("titles.title", "ilike", `%${query}%`)
       .where("titles.genre", "in", genres)
       .orderBy("titles.title", "asc")
       .limit(6)
-      .offset((page - 1) * 6)
-      .execute();
+      .offset((page - 1) * 6);
+
+    if (query && query.trim() !== "") {
+      titlesQuery = titlesQuery.where("titles.title", "ilike", `%${query}%`);
+    }
+
+    const titles = await titlesQuery.execute();
 
     return titles.map((row) => ({
       ...row,
@@ -99,7 +103,7 @@ export async function insertFavorite(title_id: string, userEmail: string) {
   try {
     const data =
       await sql<Question>`INSERT INTO favorites (title_id, user_id) VALUES (${title_id}, ${userEmail})`;
-    insertActivity(title_id, userEmail, "FAVORITED");
+    await insertActivity(title_id, userEmail, "FAVORITED");
     return data.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -114,6 +118,7 @@ export async function deleteFavorite(title_id: string, userEmail: string) {
   try {
     const data =
       await sql<Question>`DELETE FROM favorites WHERE title_id = ${title_id} AND user_id = ${userEmail}`;
+    await insertActivity(title_id, userEmail, "REMOVED_FAVORITE");  
     return data.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -178,7 +183,7 @@ export async function insertWatchLater(title_id: string, userEmail: string) {
     const data =
       await sql<Question>`INSERT INTO watchLater (title_id, user_id) VALUES (${title_id}, ${userEmail})`;
 
-    insertActivity(title_id, userEmail, "WATCH_LATER");
+    await insertActivity(title_id, userEmail, "WATCH_LATER");
     return data.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -193,6 +198,7 @@ export async function deleteWatchLater(title_id: string, userEmail: string) {
   try {
     const data =
       await sql`DELETE FROM watchLater WHERE title_id = ${title_id} AND user_id = ${userEmail}`;
+    await insertActivity(title_id, userEmail, "REMOVED_WATCH_LATER");
     return data.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -249,21 +255,41 @@ export async function fetchActivities(page: number, userEmail: string) {
       .execute();
 
     // Format each activity with a description
-    return activities.map(activity => ({
-      id: activity.id,
-      timestamp: activity.timestamp,
-      description: `${activity.activity === "FAVORITED" ? "Favorited" : "Added"} ${activity.title}${activity.activity === "WATCH_LATER" ? " to Watch Later" : ""}`
-    }));
+    return activities.map((activity) => {
+      const act = activity.activity as "FAVORITED" | "REMOVED_FAVORITE" | "WATCH_LATER" | "REMOVED_WATCH_LATER";
+      let description = "";
+      switch (act) {
+        case "FAVORITED":
+          description = `Favorited ${activity.title}`;
+          break;
+        case "REMOVED_FAVORITE":
+          description = `Unfavorited ${activity.title}`;
+          break;
+        case "WATCH_LATER":
+          description = `Added ${activity.title} to Watch Later`;
+          break;
+        case "REMOVED_WATCH_LATER":
+          description = `Removed ${activity.title} from Watch Later`;
+          break;
+        default:
+          description = `${activity.activity} ${activity.title}`;
+      }
+      return {
+        id: activity.id,
+        timestamp: activity.timestamp instanceof Date ? activity.timestamp.toISOString() : String(activity.timestamp),
+        description,
+      };
+    });
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch activities.");
   }
 }
 
-async function insertActivity(
+export async function insertActivity(
   title_id: string,
   userEmail: string,
-  activity: "FAVORITED" | "WATCH_LATER"
+  activity: "FAVORITED" | "REMOVED_FAVORITE" | "WATCH_LATER" | "REMOVED_WATCH_LATER"
 ) {
   try {
     const data =
