@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import MovieCard from "../components/MovieCard";
+import { mutate } from 'swr';
 
 const WatchLaterPage = () => {
   const [watchLaterMovies, setWatchLaterMovies] = useState<any[]>([]);
@@ -44,6 +45,8 @@ const WatchLaterPage = () => {
         setWatchLaterMovies((prevMovies) =>
           prevMovies.filter((movie) => movie.id !== id)
         );
+        // Refresh activities feed immediately
+        mutate('/api/activities?page=1');
       } else {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }

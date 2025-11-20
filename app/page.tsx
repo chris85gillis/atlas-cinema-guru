@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { mutate } from 'swr';
 import Filters from './components/Filters';
 import MovieCard from './components/MovieCard';
 import PaginationControls from './components/PaginationControls';
@@ -103,6 +104,8 @@ const HomePage: React.FC = () => {
         setFavoriteIds((prevIds) =>
           isCurrentlyFavorite ? prevIds.filter((favId) => favId !== id) : [...prevIds, id]
         );
+        // Revalidate activities feed immediately so Latest Activities updates fast
+        mutate('/api/activities?page=1');
       } else {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
@@ -125,6 +128,8 @@ const HomePage: React.FC = () => {
         setWatchLaterIds((prevIds) =>
           isCurrentlyInWatchLater ? prevIds.filter((watchId) => watchId !== id) : [...prevIds, id]
         );
+        // Revalidate activities feed immediately
+        mutate('/api/activities?page=1');
       } else {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
